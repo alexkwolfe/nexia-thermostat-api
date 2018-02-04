@@ -1,5 +1,5 @@
 {
-  "name": "nexia-api",
+  "name": "@cdmnky/nexia-api",
   "version": "0.0.2",
   "description": "Api for interfacing with nexia thermostat",
   "main": "index.js",

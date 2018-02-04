@@ -3,6 +3,12 @@ Nexia-thermostat-api
 An api to control nexia thermostats
 
 
+Installation
+============
+
+`npm install --save @cdmnky/nexia-api`
+
+
 Usage
 =====
 

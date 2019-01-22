@@ -53,6 +53,12 @@ NexiaApi = (function () {
     }
 
     NexiaApi.prototype.setpoints = function (thermostat, cool, hot) {
+        // If we don't have a thermostat, or the
+        // thermostat is a number, that's a problem.
+        if (thermostat == undefined || !isNaN(thermostat)) {
+            return console.error("Cannot set temperature without a target thermostat!")
+        }
+        
         var out = {}
         if (cool != undefined) {
             out.cool = cool
@@ -60,8 +66,10 @@ NexiaApi = (function () {
         if (hot != undefined) {
             out.heat = hot
         }
-        var zone = thermostat.zones[0]
-		console.log(JSON.stringify(zone))
+        var zone = thermostat.data.zones[0]
+        if (isNaN(zone.id)) {
+            return console.error("Could not read ID from provided thermostat!")
+        }
 
         return this.post(zone.type + "s/" + zone.id + "/setpoints", out)
     }
@@ -87,7 +95,7 @@ NexiaApi = (function () {
     }
 	
     NexiaApi.prototype.getThermostats = function (number) {
-        return this.last_house._links.child[0].data.items
+        return this.last_house._links.child[0].data.items[0]._links.child
     }
 
     NexiaApi.prototype.getThermostat = function (number) {

@@ -52,7 +52,7 @@ NexiaApi = (function () {
         this.runMode("permanent_hold")
     }
 
-    NexiaApi.prototype.setpoints = function (cool, hot) {
+    NexiaApi.prototype.setpoints = function (thermostat, cool, hot) {
         var out = {}
         if (cool != undefined) {
             out.cool = cool
@@ -60,7 +60,8 @@ NexiaApi = (function () {
         if (hot != undefined) {
             out.heat = hot
         }
-        var zone = this.getThermostat().zones[0]
+        var zone = thermostat.zones[0]
+		console.log(JSON.stringify(zone))
 
         return this.post(zone.type + "s/" + zone.id + "/setpoints", out)
     }
@@ -84,9 +85,17 @@ NexiaApi = (function () {
                 return data
             })
     }
+	
+    NexiaApi.prototype.getThermostats = function (number) {
+        return this.last_house._links.child[0].data.items
+    }
 
-    NexiaApi.prototype.getThermostat = function () {
-        return this.last_house._links.child[0].data.items[0]
+    NexiaApi.prototype.getThermostat = function (number) {
+		var num = 0
+		if (number != undefined) {
+			num = number
+		}
+        return this.last_house._links.child[0].data.items[num]
     }
 
 

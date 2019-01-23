@@ -6,15 +6,33 @@ An api to control nexia thermostats
 Usage
 =====
 
-* connect using a mobile id from nexia site
-* use api.getHouse() to load basic info
-* use commands
- 
+```js
+var nexiaApi = require('@cliss/nexia-api');
+const activation_code = 1234567890; // Your code here; see below.
+let auth = {
+  mobile_id: 1234567,
+  api_key: '1234567890abcdef1234567890abcde'
+};
 
-API
-===
-to be added soon
+nexiaApi.getHouse().then(function (houseResult) {
+  const thermostats = nexiaApi.getThermostats();
 
+  thermostats.forEach(thermostat => {
+    const values = nexiaApi.getThermostatState(thermostat);
+    console.log(values.name + 
+      ": " + values.heat +
+       "º → [" + values.temp + "º; " + values.status + "; " + values.mode.toUpperCase() + "] → " + 
+       values.cool + "º");
+  });
+});
+```
+
+Will output:
+
+```
+Downstairs: 70º → [70º; Waiting...; HEAT] → 76º
+Upstairs: 69º → [69º; Heating; AUTO] → 75º
+```
 
 Activation
 ==========

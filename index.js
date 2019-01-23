@@ -52,7 +52,60 @@ NexiaApi = (function () {
         this.runMode("permanent_hold")
     }
 
-    NexiaApi.prototype.setpoints = function (thermostat, cool, hot) {
+    //////////////////////////////////////////
+    //              THERMOSTAT              //
+    //////////////////////////////////////////
+
+    NexiaApi.prototype.getThermostats = function () {
+        return this.last_house._links.child[0].data.items[0]._links.child.map(child => child.data)
+    }
+
+    NexiaApi.prototype.getThermostat = function (number) {
+		var num = 0
+		if (number != undefined) {
+			num = number
+		}
+        return this.last_house._links.child[0].data.items[num].data
+    }
+
+    NexiaApi.prototype.findThermostatFeature = function(thermostat, featureName) {
+        if (thermostat == undefined) {
+            return console.error("Must provide a thermostat")
+        } else if (featureName == undefined) {
+            return console.error("Must provide a feature name")
+        }
+
+        const feature = thermostat.features.filter(feature => feature.name == featureName)
+        if (feature.length == 0) {
+            return console.error('Could not find feature "' + featureName + '"')
+        } else if (feature.length > 1) {
+            return console.error('Found too many options for features for "' + featureName + '"')
+        }
+        return feature[0]
+    }
+
+    NexiaApi.prototype.getThermostatModelName = function (thermostat) {
+        if (thermostat == undefined) {
+            return console.error("Must provide a thermostat")
+        }
+
+        const feature = this.findThermostatFeature(thermostat, "advanced_info")
+        return feature.items.filter(item => item.label == "Model")[0].value
+
+    }
+
+    NexiaApi.prototype.getThermostatState = function(thermostat) {
+        return {
+            "name": thermostat.name,
+            "heat": thermostat.zones[0].setpoints.heat,
+            "temp": thermostat.zones[0].temperature,
+            "cool": thermostat.zones[0].setpoints.cool,
+            "status": thermostat.system_status,
+            "mode": thermostat.zones[0].current_zone_mode
+        }
+    }
+
+    NexiaApi.prototype.setTemperature = function (thermostat, cool, hot) {
         // If we don't have a thermostat, or the
         // thermostat is a number, that's a problem.
         if (thermostat == undefined || !isNaN(thermostat)) {
@@ -66,13 +119,17 @@ NexiaApi = (function () {
         if (hot != undefined) {
             out.heat = hot
         }
-        var zone = thermostat.data.zones[0]
+        var zone = thermostat.zones[0]
         if (isNaN(zone.id)) {
             return console.error("Could not read ID from provided thermostat!")
         }
 
-        return this.post(zone.type + "s/" + zone.id + "/setpoints", out)
+        //return this.post(zone.type + "s/" + zone.id + "/setpoints", out)
     }
+
+    //////////////////////////////////////////
+    //                 HOUSE                //
+    //////////////////////////////////////////
 
     NexiaApi.prototype.getHouseId = function () {
         return this.last_session._links.child[0].data.id
@@ -93,17 +150,18 @@ NexiaApi = (function () {
                 return data
             })
     }
-	
-    NexiaApi.prototype.getThermostats = function (number) {
-        return this.last_house._links.child[0].data.items[0]._links.child
-    }
 
-    NexiaApi.prototype.getThermostat = function (number) {
-		var num = 0
-		if (number != undefined) {
-			num = number
-		}
-        return this.last_house._links.child[0].data.items[num]
+    NexiaApi.prototype.getSystemStatus = function(thermostat) {
+        const status = thermostat.zones[0].features[0].status
+        if (status == "System Idle") {
+            return "Idle"
+        } else if (status == "Heating") {
+            return "Heating"
+        } else if (status == "Cooling") {
+            return "Cooling"
+        }
+
+        return undefined
     }
 
 
